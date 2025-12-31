@@ -3,7 +3,7 @@ import { auth, provider } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import heroImg from "../assets/hero.png";
 import logo from "../assets/logo.png";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { requestNotificationPermission } from "../notifications";
 
@@ -12,41 +12,60 @@ export default function Login() {
 
   const handleGoogleLogin = async () => {
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // ✅ Save user info
+      await setDoc(
+        doc(db, "users", user.uid),
+        {
+          uid: user.uid,
+          name: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL,
+          lastLogin: new Date(),
+        },
+        { merge: true }
+      );
+
+      // ✅ Request push notifications
+      try {
+        const token = await requestNotificationPermission();
+        if (token) {
+          await setDoc(
+            doc(db, "users", user.uid),
+            { fcmToken: token },
+            { merge: true }
+          );
+        }
+      } catch (err) {
+        console.warn("Notification permission denied");
+      }
+
+      // Clear cached route
       localStorage.removeItem("rideRoute");
+
       navigate("/home");
     } catch (error) {
       console.error("Login failed:", error);
+      alert("Login failed. Please try again.");
     }
-  };
-
-  const saveToken = async () => {
-    const token = await requestNotificationPermission();
-    if (!token) return;
-
-    await updateDoc(doc(db, "users", auth.currentUser.uid), {
-      fcmToken: token,
-    });
   };
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-
-      {/* NAVBAR */}
+      {/* Navbar */}
       <nav className="flex items-center justify-between px-12 py-6">
         <div className="flex items-center gap-3">
           <img src={logo} alt="HopInHub" className="w-12 h-12" />
           <h1 className="text-2xl font-bold text-blue-600">HopInHub</h1>
         </div>
-
       </nav>
 
-      {/* MAIN CONTENT */}
+      {/* Content */}
       <div className="flex flex-col md:flex-row items-center justify-between px-16 mt-10 gap-10">
-
-        {/* LEFT CONTENT */}
         <div className="max-w-xl">
-          <h1 className="text-5xl font-extrabold text-gray-900 leading-tight whitespace-nowrap">
+          <h1 className="text-5xl font-extrabold text-gray-900">
             Smart Commute Starts Here
           </h1>
 
@@ -71,13 +90,8 @@ export default function Login() {
           </div>
         </div>
 
-        {/* RIGHT IMAGE */}
         <div className="max-w-xl relative -ml-10">
-          <img
-            src={heroImg}
-            alt="Car illustration"
-            className="w-[520px]"
-          />
+          <img src={heroImg} alt="Car illustration" className="w-[520px]" />
         </div>
       </div>
     </div>

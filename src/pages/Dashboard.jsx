@@ -12,6 +12,8 @@ import {
 import { auth, db } from "../firebase";
 import Navbar from "../components/Navbar";
 import FloatingChat from "../components/FloatingChat";
+import MapPreview from "../components/MapPreview";
+
 
 /* ---------------- PRICE CONFIG ---------------- */
 const PRICE_PER_KM = {
@@ -130,6 +132,14 @@ export default function Dashboard() {
             📏 {distance.toFixed(1)} km • ⏱ {duration}
           </p>
         )}
+
+        {finalPickup && finalDestination && (
+          <MapPreview
+            pickup={finalPickup}
+            destination={finalDestination}
+          />
+        )}
+
 
         {/* ---------------- PROVIDERS ---------------- */}
         <div className="grid md:grid-cols-4 gap-6 mt-10">

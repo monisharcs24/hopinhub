@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { MapPin, Navigation, Search, Car, Bike, Users } from "lucide-react";
 import bannerImage from "../assets/hopin-banner.png";
 import Navbar from "../components/Navbar";
+import LocationAutocomplete from "../components/LocationAutocomplete";
 
 export default function Home() {
   const [pickup, setPickup] = useState("");
@@ -124,16 +125,15 @@ export default function Home() {
         <form onSubmit={submitForm} className="flex flex-col gap-6">
 
           {/* Pickup Field */}
-          <div className="flex items-center gap-3 bg-gray-100 dark:bg-gray-700 p-4 rounded-2xl">
-            <MapPin className="text-indigo-600 dark:text-indigo-300" />
-            <input
-              type="text"
-              placeholder="Pickup Location"
+          <div className="flex items-center gap-3 bg-gray-100 p-4 rounded-2xl">
+            <MapPin className="text-indigo-600" />
+            <LocationAutocomplete
               value={pickup}
-              onChange={(e) => setPickup(e.target.value)}
-              className="w-full bg-transparent outline-none text-gray-700 dark:text-white"
+              onChange={setPickup}
+              placeholder="Pickup Location"
             />
           </div>
+
 
           {/* Detect Button */}
           <button
@@ -146,16 +146,15 @@ export default function Home() {
 
 
           {/* Destination Field */}
-          <div className="flex items-center gap-3 bg-gray-100 dark:bg-gray-700 p-4 rounded-2xl">
-            <Search className="text-indigo-600 dark:text-indigo-300" />
-            <input
-              type="text"
-              placeholder="Destination"
+          <div className="flex items-center gap-3 bg-gray-100 p-4 rounded-2xl">
+            <Search className="text-indigo-600" />
+            <LocationAutocomplete
               value={destination}
-              onChange={(e) => setDestination(e.target.value)}
-              className="w-full bg-transparent outline-none text-gray-700 dark:text-white"
+              onChange={setDestination}
+              placeholder="Destination"
             />
           </div>
+
 
           {/* Find Ride Button */}
           <button
