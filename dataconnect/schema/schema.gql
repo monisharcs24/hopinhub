@@ -1,0 +1,49 @@
+type User @table {
+  displayName: String!
+  email: String!
+  phoneNumber: String!
+  createdAt: Timestamp!
+  photoUrl: String
+  bio: String
+  driverLicense: String
+}
+
+type Vehicle @table {
+  make: String!
+  model: String!
+  year: Int!
+  licensePlate: String!
+  seats: Int!
+  color: String
+  photoUrl: String
+  driver: User
+}
+
+type Ride @table {
+  origin: String!
+  destination: String!
+  departureTime: Timestamp!
+  availableSeats: Int!
+  status: String!
+  createdAt: Timestamp!
+  estimatedDuration: Int
+  estimatedFare: Float
+  driver: User
+}
+
+type Booking @table {
+  status: String!
+  createdAt: Timestamp!
+  numberOfPassengers: Int
+  passenger: User
+  ride: Ride
+}
+
+type Review @table {
+  rating: Int!
+  createdAt: Timestamp!
+  comment: String
+  reviewer: User
+  reviewed: User
+  ride: Ride
+}
