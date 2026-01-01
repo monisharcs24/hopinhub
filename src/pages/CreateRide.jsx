@@ -1,272 +1,136 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  addDoc,
-  collection,
-  serverTimestamp,
-  onSnapshot,
-  query,
-  where,
-  updateDoc,
-  doc,
-} from "firebase/firestore";
-import { auth, db } from "../firebase";
-import Navbar from "../components/Navbar";
-import RideChat from "../components/RideChat";
+import { useState } from "react";
+import { MapPin, Navigation, Car, Users, IndianRupee, Calendar, Clock } from "lucide-react";
 
 export default function CreateRide() {
-  const navigate = useNavigate();
-
   const [pickup, setPickup] = useState("");
   const [destination, setDestination] = useState("");
-  const [vehicleType, setVehicleType] = useState("");
+  const [vehicle, setVehicle] = useState("");
   const [seats, setSeats] = useState("");
   const [price, setPrice] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
 
-  const [myRides, setMyRides] = useState([]);
-  const [activeRideId, setActiveRideId] = useState(
-    localStorage.getItem("activeRideId")
-  );
-
-  /* ================= AUTH CHECK ================= */
-  useEffect(() => {
-    if (!auth.currentUser) navigate("/login");
-  }, []);
-
-  /* ================= CREATE RIDE ================= */
-  const handleCreateRide = async () => {
-    if (!pickup || !destination || !vehicleType || !seats || !price || !date || !time) {
-      alert("Please fill all fields");
-      return;
-    }
-
-    await addDoc(collection(db, "rides"), {
-      pickup,
-      destination,
-      vehicleType,
-      seats: Number(seats),
-      availableSeats: Number(seats),
-      price: Number(price),
-      date,
-      time,
-      createdBy: auth.currentUser.uid,
-      passengers: [],
-      status: "open",
-      createdAt: serverTimestamp(),
-    });
-
-    setPickup("");
-    setDestination("");
-    setVehicleType("");
-    setSeats("");
-    setPrice("");
-    setDate("");
-    setTime("");
-
-    alert("Ride created successfully 🚗");
-  };
-
-  /* ================= FETCH MY RIDES ================= */
-  useEffect(() => {
-    if (!auth.currentUser) return;
-
-    const q = query(
-      collection(db, "rides"),
-      where("createdBy", "==", auth.currentUser.uid)
-    );
-
-    const unsub = onSnapshot(q, (snapshot) => {
-      setMyRides(
-        snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }))
-      );
-    });
-
-    return () => unsub();
-  }, []);
-
-  /* ================= COMPLETE RIDE ================= */
-  const completeRide = async (rideId) => {
-    await updateDoc(doc(db, "rides", rideId), {
-      status: "completed",
-    });
-
-    if (activeRideId === rideId) {
-      setActiveRideId(null);
-      localStorage.removeItem("activeRideId");
-    }
-  };
-
-  /* ================= CANCEL RIDE ================= */
-  const cancelRide = async (rideId) => {
-    await updateDoc(doc(db, "rides", rideId), {
-      status: "cancelled",
-    });
-
-    if (activeRideId === rideId) {
-      setActiveRideId(null);
-      localStorage.removeItem("activeRideId");
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex justify-center items-start py-10 px-4">
 
-      <div className="max-w-3xl mx-auto mt-20 px-6">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
 
-        {/* ================= CREATE FORM ================= */}
-        <div className="bg-white p-8 rounded-xl shadow">
-          <h2 className="text-2xl font-bold text-center mb-6">
-            Create a Ride
-          </h2>
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-5 text-white text-center">
+          <h2 className="text-xl font-semibold">Create a Ride</h2>
+          <p className="text-sm opacity-90">Plan your journey easily</p>
+        </div>
 
-          <input
-            placeholder="Pickup Location"
-            className="w-full border p-3 rounded mb-4"
-            value={pickup}
-            onChange={(e) => setPickup(e.target.value)}
-          />
+        {/* Form */}
+        <form className="p-6 space-y-4">
 
-          <input
-            placeholder="Destination"
-            className="w-full border p-3 rounded mb-4"
-            value={destination}
-            onChange={(e) => setDestination(e.target.value)}
-          />
+          {/* Pickup */}
+          <div className="flex items-center border rounded-lg px-3 py-2">
+            <MapPin className="text-blue-600 mr-2" size={18} />
+            <input
+              type="text"
+              placeholder="Pickup Location"
+              value={pickup}
+              onChange={(e) => setPickup(e.target.value)}
+              className="w-full outline-none"
+            />
+          </div>
 
-          <select
-            className="w-full border p-3 rounded mb-4"
-            value={vehicleType}
-            onChange={(e) => setVehicleType(e.target.value)}
-          >
-            <option value="">Select Vehicle</option>
-            <option value="Car">Car</option>
-            <option value="Auto">Auto</option>
-          </select>
+          {/* Destination */}
+          <div className="flex items-center border rounded-lg px-3 py-2">
+            <Navigation className="text-blue-600 mr-2" size={18} />
+            <input
+              type="text"
+              placeholder="Destination"
+              value={destination}
+              onChange={(e) => setDestination(e.target.value)}
+              className="w-full outline-none"
+            />
+          </div>
 
-          <input
-            type="number"
-            placeholder="Seats"
-            className="w-full border p-3 rounded mb-4"
-            value={seats}
-            onChange={(e) => setSeats(e.target.value)}
-          />
+          {/* Vehicle */}
+          <div className="flex items-center border rounded-lg px-3 py-2">
+            <Car className="text-blue-600 mr-2" size={18} />
+            <select
+              value={vehicle}
+              onChange={(e) => setVehicle(e.target.value)}
+              className="w-full outline-none bg-transparent"
+            >
+              <option value="">Select Vehicle</option>
+              <option value="Car">Car</option>
+              <option value="Bike">Bike</option>
+              <option value="Auto">Auto</option>
+            </select>
+          </div>
 
-          <input
-            type="number"
-            placeholder="Price (₹)"
-            className="w-full border p-3 rounded mb-4"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-          />
+          {/* Seats */}
+          <div className="flex items-center border rounded-lg px-3 py-2">
+            <Users className="text-blue-600 mr-2" size={18} />
+            <input
+              type="number"
+              placeholder="Seats"
+              value={seats}
+              onChange={(e) => setSeats(e.target.value)}
+              className="w-full outline-none"
+            />
+          </div>
 
-          <input
-            type="date"
-            className="w-full border p-3 rounded mb-4"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
+          {/* Price */}
+          <div className="flex items-center border rounded-lg px-3 py-2">
+            <IndianRupee className="text-blue-600 mr-2" size={18} />
+            <input
+              type="number"
+              placeholder="Price (₹)"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              className="w-full outline-none"
+            />
+          </div>
 
-          <input
-            type="time"
-            className="w-full border p-3 rounded mb-6"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-          />
+          {/* Date */}
+          <div className="flex items-center border rounded-lg px-3 py-2">
+            <Calendar className="text-blue-600 mr-2" size={18} />
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="w-full outline-none"
+            />
+          </div>
 
+          {/* Time */}
+          <div className="flex items-center border rounded-lg px-3 py-2">
+            <Clock className="text-blue-600 mr-2" size={18} />
+            <input
+              type="time"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              className="w-full outline-none"
+            />
+          </div>
+
+          {/* Button */}
           <button
-            onClick={handleCreateRide}
-            className="w-full bg-blue-600 text-white py-3 rounded-lg"
+            type="submit"
+            className="w-full mt-4 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition"
           >
             Create Ride
           </button>
+        </form>
+
+        {/* Info Section */}
+        <div className="px-6 pb-6">
+          <div className="mt-4">
+            <h3 className="font-semibold">Active Rides</h3>
+            <p className="text-gray-500 text-sm">No active rides.</p>
+          </div>
+
+          <div className="mt-4">
+            <h3 className="font-semibold">Ride History</h3>
+            <p className="text-gray-500 text-sm">No past rides.</p>
+          </div>
         </div>
-
-        {/* ================= ACTIVE RIDES ================= */}
-        <h2 className="text-2xl font-semibold mt-12 mb-4">Active Rides</h2>
-
-        {myRides.filter(r => r.status === "open").length === 0 ? (
-          <p className="text-gray-500">No active rides.</p>
-        ) : (
-          <div className="grid md:grid-cols-2 gap-6">
-            {myRides.filter(r => r.status === "open").map((ride) => (
-              <div key={ride.id} className="bg-white p-6 rounded-xl shadow">
-                <h3 className="font-semibold">
-                  {ride.pickup} → {ride.destination}
-                </h3>
-
-                <p>Seats Left: {ride.availableSeats}</p>
-
-                <div className="flex gap-3 mt-4">
-                  <button
-                    onClick={() => {
-                      setActiveRideId(ride.id);
-                      localStorage.setItem("activeRideId", ride.id);
-                    }}
-                    className="bg-blue-600 text-white px-4 py-2 rounded"
-                  >
-                    Open Chat
-                  </button>
-
-                  <button
-                    onClick={() => completeRide(ride.id)}
-                    className="bg-red-500 text-white px-4 py-2 rounded"
-                  >
-                    Complete
-                  </button>
-
-                  <button
-                    onClick={() => cancelRide(ride.id)}
-                    className="bg-yellow-500 text-white px-4 py-2 rounded"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* ================= RIDE HISTORY ================= */}
-        <h2 className="text-2xl font-semibold mt-12 mb-4">
-          Ride History
-        </h2>
-
-        {myRides.filter(r => r.status !== "open").length === 0 ? (
-          <p className="text-gray-500">No past rides.</p>
-        ) : (
-          <div className="grid md:grid-cols-2 gap-6">
-            {myRides
-              .filter(r => r.status !== "open")
-              .map((ride) => (
-                <div key={ride.id} className="bg-gray-100 p-6 rounded-xl">
-                  <h3 className="font-semibold">
-                    {ride.pickup} → {ride.destination}
-                  </h3>
-
-                  <p>Status: {ride.status}</p>
-                  <p>Seats Used: {ride.seats - ride.availableSeats}</p>
-                </div>
-              ))}
-          </div>
-        )}
       </div>
-
-      {/* CHAT */}
-      {activeRideId && (
-        <RideChat
-          rideId={activeRideId}
-          onClose={() => {
-            setActiveRideId(null);
-            localStorage.removeItem("activeRideId");
-          }}
-        />
-      )}
     </div>
   );
 }
